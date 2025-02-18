@@ -17,7 +17,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: MapWidget(
-        styleUri: 'mapbox://styles/mapbox/streets-v12',
+        styleUri: 'mapbox://styles/mapbox/navigation-night-v1', // Change the style here
         cameraOptions: CameraOptions(
           center: Point(coordinates: Position(4.8357, 45.7640)),
           zoom: 2,

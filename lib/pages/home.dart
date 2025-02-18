@@ -22,8 +22,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Person> persons = List.generate(
         20,
-        (index) =>
-            Person('Person $index', 'https://picsum.photos/seed/$index/100/100', index));
+        (index) => Person('Toto',
+            'https://picsum.photos/seed/$index/100/100', index));
 
     return ListView.builder(
       itemCount: persons.length,
@@ -31,11 +31,14 @@ class HomePage extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
           child: ListTile(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: Color.fromARGB(255, 79, 79, 79))),
-            tileColor: const Color.fromARGB(159, 255, 240, 240),
-            leading: Image.network(persons[index].imageUrl, width: 50),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                  25), // Half of the width/height to make it circular
+              child: Image.network(persons[index].imageUrl,
+                  width: 50, height: 50, fit: BoxFit.cover),
+            ),
             title: Text(persons[index].name),
             trailing: Text('${persons[index].distance} km'),
           ),
