@@ -3,6 +3,7 @@
         android:label="flutter_app_test"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.mapbox.token" android:value="sk.eyJ1IjoianVuaW93IiwiYSI6ImNtN2FhNDNvdTAyMHEyanNqYXE2ZDdiYXUifQ.Br889Mq3CzRZ_prbxB4zhg"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -42,4 +43,5 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
