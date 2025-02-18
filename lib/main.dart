@@ -1,27 +1,36 @@
 import 'package:flutter/material.dart';
+import 'pages/home.dart';
+import 'pages/map.dart';
+import 'pages/profile.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class Person {
-  final String name;
-  final String imageUrl;
-  final int distance;
-
-  Person(this.name, this.imageUrl, this.distance);
-}
-
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    List<Person> persons = List.generate(
-        20,
-        (index) =>
-            Person('Person $index', 'https://picsum.photos/20$index', index));
+  _MyAppState createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
+  int _selectedIndex = 0;
+
+  static final List<Widget> _pages = [
+    const MapApp(),
+    const HomeApp(),
+    const ProfilePage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -31,41 +40,25 @@ class MyApp extends StatelessWidget {
           ),
           backgroundColor: const Color.fromARGB(255, 138, 0, 41),
         ),
-        body: ListView.builder(
-            itemCount: persons.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                      )),
-                  tileColor: const Color.fromARGB(159, 255, 240, 240),
-                  leading: Image.network(persons[index].imageUrl, width: 50),
-                  title: Text(persons[index].name),
-                  trailing: Text('${persons[index].distance} km'),
-                ),
-              );
-            }),
+        body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.map),
-              label: 'Accueil',
+              label: 'Map',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Recherche',
+              icon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: 'Profil',
+              label: 'Profile',
             ),
           ],
+          currentIndex: _selectedIndex,
           selectedItemColor: const Color.fromARGB(255, 138, 0, 41),
+          onTap: _onItemTapped,
         ),
       ),
     );
