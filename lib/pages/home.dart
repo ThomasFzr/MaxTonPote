@@ -33,7 +33,7 @@ class HomePage extends StatelessWidget {
           child: ListTile(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: Colors.black)),
+                side: const BorderSide(color: Color.fromARGB(255, 79, 79, 79))),
             tileColor: const Color.fromARGB(159, 255, 240, 240),
             leading: Image.network(persons[index].imageUrl, width: 50),
             title: Text(persons[index].name),

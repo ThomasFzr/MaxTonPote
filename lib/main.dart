@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
             'MAX TON POTE',
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: const Color.fromARGB(255, 138, 0, 41),
+          backgroundColor: const Color.fromARGB(255, 119, 31, 58),
         ),
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(

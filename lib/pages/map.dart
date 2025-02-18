@@ -17,10 +17,10 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: MapWidget(
+        styleUri: 'mapbox://styles/mapbox/streets-v12',
         cameraOptions: CameraOptions(
-          center: Point(coordinates: Position(-98.0, 39.5)), // Corrected
+          center: Point(coordinates: Position(4.8357, 45.7640)),
           zoom: 2,
-          
         ),
         onMapCreated: _onMapCreated,
       ),
@@ -36,7 +36,7 @@ class _MapPageState extends State<MapPage> {
       final Uint8List imageData = bytes.buffer.asUint8List();
 
       PointAnnotationOptions options = PointAnnotationOptions(
-        geometry: Point(coordinates: Position(-74.00913, 40.75183)), // Example location
+        geometry: Point(coordinates: Position(4.8357, 45.7640)),
         image: imageData,
         iconSize: 0.2,
       );
