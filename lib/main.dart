@@ -42,18 +42,18 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        extendBody: true, // Allows transparency effect on bottom bar
+        extendBody: true,
         appBar: AppBar(
           title: const Text(
             'MAX TON POTE',
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: const Color.fromARGB(255, 119, 31, 58), // Keep AppBar color
+          backgroundColor: const Color.fromARGB(255, 119, 31, 58),
         ),
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.grey, // Transparent BottomNavigationBar
-          elevation: 0, // Removes shadow
+          backgroundColor: Colors.grey,
+          elevation: 0,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.map),

@@ -10,14 +10,12 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Profile Picture
           CircleAvatar(
             radius: 60,
             backgroundImage: NetworkImage('https://picsum.photos/200'),
           ),
           const SizedBox(height: 16),
 
-          // Name
           const Text(
             'John Doe',
             style: TextStyle(
@@ -27,14 +25,12 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Email
           const Text(
             'johndoe@example.com',
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
           const SizedBox(height: 20),
 
-          // Profile Details
           Expanded(
             child: ListView(
               children: const [

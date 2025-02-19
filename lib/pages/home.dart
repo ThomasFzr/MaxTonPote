@@ -35,7 +35,7 @@ class HomePage extends StatelessWidget {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(
-                  25), // Half of the width/height to make it circular
+                  25),
               child: Image.network(persons[index].imageUrl,
                   width: 50, height: 50, fit: BoxFit.cover),
             ),
