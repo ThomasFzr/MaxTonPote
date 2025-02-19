@@ -73,10 +73,10 @@ class _MapPageState extends State<MapPage> {
       pulsingColor: Colors.blue.value,
     ));
 
-    map.setCamera(mp.CameraOptions(
+    map.flyTo(mp.CameraOptions(
       center: mp.Point(coordinates: mp.Position(position.longitude, position.latitude)),
       zoom: 14,
-    ));
+    ), mp.MapAnimationOptions());
 
     try {
       final ByteData bytes = await rootBundle.load('assets/mark.png');
@@ -96,10 +96,10 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _recenterCamera() async {
     if (userPosition != null) {
-      mapboxMap.setCamera(mp.CameraOptions(
+      mapboxMap.flyTo(mp.CameraOptions(
         center: mp.Point(coordinates: mp.Position(userPosition!.longitude, userPosition!.latitude)),
         zoom: 14,
-      ));
+      ), mp.MapAnimationOptions());
     } else {
       debugPrint("User position is not available yet.");
     }
