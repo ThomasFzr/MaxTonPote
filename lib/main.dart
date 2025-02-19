@@ -46,13 +46,16 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text(
             'MAX TON POTE',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Color.fromARGB(255, 255, 255, 255),
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          backgroundColor: const Color.fromARGB(255, 119, 31, 58),
+          backgroundColor: const Color.fromARGB(255, 18, 18, 18),
         ),
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.grey,
+          backgroundColor: const Color.fromARGB(255, 18, 18, 18),
           elevation: 0,
           items: const [
             BottomNavigationBarItem(
@@ -69,12 +72,16 @@ class _MyAppState extends State<MyApp> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: const Color.fromARGB(255, 138, 0, 41),
-          unselectedItemColor: Colors.white,
-          selectedIconTheme: const IconThemeData(color: Color.fromARGB(255, 138, 0, 41)),
-          unselectedIconTheme: const IconThemeData(color: Colors.white),
-          selectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 119, 31, 58)),
-          unselectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 119, 31, 58)),
+          selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
+          unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
+          selectedIconTheme:
+              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+          unselectedIconTheme:
+              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+          selectedLabelStyle:
+              const TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          unselectedLabelStyle:
+              const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
           onTap: _onItemTapped,
         ),
       ),
