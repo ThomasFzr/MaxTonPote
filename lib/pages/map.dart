@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -28,6 +29,20 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _onMapCreated(MapboxMap map) async {
+    // Vérifier et demander la permission de localisation
+    bool isLocationEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
+
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+      if (permission == geo.LocationPermission.deniedForever) {
+        // return;
+      }
+    }
+
+    if (!isLocationEnabled) {
+      // return;
+    }
     mapboxMap = map;
     pointAnnotationManager = await map.annotations.createPointAnnotationManager();
 
