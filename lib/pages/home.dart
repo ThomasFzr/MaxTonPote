@@ -133,7 +133,7 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                 ),
                 child: const Text(
-                  'DEMANDE DE MAXAGE',
+                  'DEMANDER UN MAXAGE',
                   style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
               ),
