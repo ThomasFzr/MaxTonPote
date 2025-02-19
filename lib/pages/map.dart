@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:geolocator/geolocator.dart' as geo;
+import 'dart:async';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -14,6 +15,13 @@ class _MapPageState extends State<MapPage> {
   late mp.MapboxMap mapboxMap;
   mp.PointAnnotationManager? pointAnnotationManager;
   geo.Position? userPosition;
+  StreamSubscription<geo.Position>? positionStreamSubscription;
+
+  @override
+  void dispose() {
+    positionStreamSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +100,14 @@ class _MapPageState extends State<MapPage> {
     } catch (e) {
       debugPrint("Error loading image: $e");
     }
+
+    positionStreamSubscription = geo.Geolocator.getPositionStream().listen((geo.Position position) {
+      userPosition = position;
+      mapboxMap.flyTo(mp.CameraOptions(
+        center: mp.Point(coordinates: mp.Position(position.longitude, position.latitude)),
+        zoom: 14,
+      ), mp.MapAnimationOptions());
+    });
   }
 
   Future<void> _recenterCamera() async {
