@@ -88,7 +88,7 @@ class HomePage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20, width: 400,),
               Text(
                 person.name,
                 style: const TextStyle(
@@ -123,7 +123,21 @@ class HomePage extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 100, width: 500,),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  debugPrint('${person.name} button clicked!');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                ),
+                child: const Text(
+                  'DEMANDE DE MAXAGE',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
