@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class Person {
   String name;
@@ -13,17 +14,33 @@ class HomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HomePage();
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+    );
   }
 }
 
 class HomePage extends StatelessWidget {
+  final List<String> names = [
+    'Alice', 'Bob', 'Charlie', 'David', 'Emma',
+    'Frank', 'Grace', 'Henry', 'Isabella', 'Jack',
+    'Katie', 'Leo', 'Mia', 'Nathan', 'Olivia',
+    'Paul', 'Quincy', 'Rachel', 'Samuel', 'Tina'
+  ];
+
+  final Random random = Random();
+
   @override
   Widget build(BuildContext context) {
     List<Person> persons = List.generate(
-        20,
-        (index) =>
-            Person('Toto', 'https://picsum.photos/seed/$index/100/100', index));
+      20,
+      (index) => Person(
+        names[index],
+        'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
+        random.nextInt(50) + 1,
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
@@ -34,24 +51,31 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
             child: ListTile(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(25),
-                child: Image.network(persons[index].imageUrl,
-                    width: 50, height: 50, fit: BoxFit.cover),
+                child: Image.network(
+                  persons[index].imageUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
               ),
               title: Text(
                 persons[index].name,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              trailing: Text('${persons[index].distance} km',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),),
+              trailing: Text(
+                '${persons[index].distance} km',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           );
         },
