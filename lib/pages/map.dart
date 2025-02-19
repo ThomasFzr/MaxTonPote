@@ -54,6 +54,9 @@ class _MapPageState extends State<MapPage> {
     if (!isLocationEnabled) {
       return;
     }
+
+    geo.Position position = await geo.Geolocator.getCurrentPosition();
+
     mapboxMap = map;
     pointAnnotationManager =
         await map.annotations.createPointAnnotationManager();
@@ -62,6 +65,11 @@ class _MapPageState extends State<MapPage> {
       enabled: true,
       pulsingEnabled: true,
       pulsingColor: Colors.blue.value,
+    ));
+
+    map.setCamera(mp.CameraOptions(
+      center: mp.Point(coordinates: mp.Position(position.longitude, position.latitude)),
+      zoom: 14,
     ));
 
     try {
