@@ -123,7 +123,7 @@ class HomePage extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 100, width: 100,),
+              const SizedBox(height: 100, width: 500,),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(

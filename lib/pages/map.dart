@@ -13,34 +13,40 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   late mp.MapboxMap mapboxMap;
   mp.PointAnnotationManager? pointAnnotationManager;
+  geo.Position? userPosition;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: mp.MapWidget(
-        styleUri:
-            'mapbox://styles/mapbox/dark-v11',
-        cameraOptions: mp.CameraOptions(
-          center: mp.Point(coordinates: mp.Position(4.8357, 45.7640)),
-          zoom: 14,
-        ),
-        onMapCreated: _onMapCreated,
+      body: Stack(
+        children: [
+          mp.MapWidget(
+            styleUri: 'mapbox://styles/mapbox/dark-v11',
+            cameraOptions: mp.CameraOptions(
+              center: mp.Point(coordinates: mp.Position(4.8357, 45.7640)),
+              zoom: 14,
+            ),
+            onMapCreated: _onMapCreated,
+          ),
+          Positioned(
+            bottom: 110,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: _recenterCamera,
+              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              child: const Icon(Icons.my_location, color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Future<void> _onMapCreated(mp.MapboxMap map) async {
-    map.scaleBar.updateSettings(mp.ScaleBarSettings(
-      enabled: false,
-    ));
+    map.scaleBar.updateSettings(mp.ScaleBarSettings(enabled: false));
+    map.logo.updateSettings(mp.LogoSettings(enabled: false));
+    map.attribution.updateSettings(mp.AttributionSettings(enabled: false));
 
-    map.logo.updateSettings(mp.LogoSettings(
-      enabled: false,
-    ));
-
-    map.attribution.updateSettings(mp.AttributionSettings(
-      enabled: false,
-    ));
     bool isLocationEnabled = await geo.Geolocator.isLocationServiceEnabled();
     geo.LocationPermission permission = await geo.Geolocator.checkPermission();
 
@@ -56,10 +62,10 @@ class _MapPageState extends State<MapPage> {
     }
 
     geo.Position position = await geo.Geolocator.getCurrentPosition();
+    userPosition = position;
 
     mapboxMap = map;
-    pointAnnotationManager =
-        await map.annotations.createPointAnnotationManager();
+    pointAnnotationManager = await map.annotations.createPointAnnotationManager();
 
     map.location.updateSettings(mp.LocationComponentSettings(
       enabled: true,
@@ -85,6 +91,17 @@ class _MapPageState extends State<MapPage> {
       await pointAnnotationManager?.create(options);
     } catch (e) {
       debugPrint("Error loading image: $e");
+    }
+  }
+
+  Future<void> _recenterCamera() async {
+    if (userPosition != null) {
+      mapboxMap.setCamera(mp.CameraOptions(
+        center: mp.Point(coordinates: mp.Position(userPosition!.longitude, userPosition!.latitude)),
+        zoom: 14,
+      ));
+    } else {
+      debugPrint("User position is not available yet.");
     }
   }
 }
