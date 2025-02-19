@@ -19,7 +19,7 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: mp.MapWidget(
         styleUri:
-            'mapbox://styles/mapbox/navigation-night-v1', // Change the style here
+            'mapbox://styles/mapbox/dark-v11',
         cameraOptions: mp.CameraOptions(
           center: mp.Point(coordinates: mp.Position(4.8357, 45.7640)),
           zoom: 14,
