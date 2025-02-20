@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../services/google_auth.dart';
+
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+  String? _userId;
+  ProfilePage({super.key, String? userId}) {
+    _userId = userId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +18,17 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Text(_userId ?? 'Not signed in'),
+            ElevatedButton(
+                onPressed: () async {
+                  if (_userId == null) {
+                    await _googleAuthService.signInWithGoogle();
+                  } else {
+                    await _googleAuthService.signOut();
+                    _userId = null;
+                  }
+                },
+                child: Text(_userId == null ? "Sign in with Google" : "Sign out")),
             CircleAvatar(
               radius: 60,
               backgroundImage: NetworkImage('https://picsum.photos/200'),

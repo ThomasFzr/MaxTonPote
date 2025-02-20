@@ -20,6 +20,8 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+final supabase = Supabase.instance.client;
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -29,11 +31,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
+  String? _userId;
 
-  static final List<Widget> _pages = [
+  @override
+  void initState() {
+    super.initState();
+    supabase.auth.onAuthStateChange.listen((data) {
+      setState(() {
+        _userId = data.session?.user.id;
+      });
+    });
+  }
+
+  List<Widget> _pages() => [
     const MapPage(),
     const HomeApp(),
-    const ProfilePage(),
+    ProfilePage(userId: _userId),
   ];
 
   void _onItemTapped(int index) {
@@ -58,7 +71,7 @@ class _MyAppState extends State<MyApp> {
           ),
           backgroundColor: const Color.fromARGB(255, 18, 18, 18),
         ),
-        body: _pages[_selectedIndex],
+        body: _pages()[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: const Color.fromARGB(255, 18, 18, 18),
           elevation: 0,
