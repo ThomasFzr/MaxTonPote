@@ -19,15 +19,19 @@ class ProfilePage extends StatelessWidget {
             if (_userId == null)
               Expanded(
                 child: Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await _googleAuthService.signInWithGoogle();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 50),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await _googleAuthService.signInWithGoogle();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                      ),
+                      child: const Text("Sign in with Google"),
                     ),
-                    child: const Text("Sign in with Google"),
                   ),
                 ),
               )
@@ -58,9 +62,12 @@ class ProfilePage extends StatelessWidget {
               Expanded(
                 child: ListView(
                   children: [
-                    const ProfileTile(icon: Icons.location_on, text: 'Lyon, France'),
-                    const ProfileTile(icon: Icons.phone, text: '+33 6 12 34 56 78'),
-                    const ProfileTile(icon: Icons.cake, text: 'Born: January 1, 1990'),
+                    const ProfileTile(
+                        icon: Icons.location_on, text: 'Lyon, France'),
+                    const ProfileTile(
+                        icon: Icons.phone, text: '+33 6 12 34 56 78'),
+                    const ProfileTile(
+                        icon: Icons.cake, text: 'Born: January 1, 1990'),
                     const ProfileTile(icon: Icons.settings, text: 'Settings'),
                     ProfileTile(
                       icon: Icons.logout,
@@ -85,7 +92,8 @@ class ProfileTile extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
 
-  const ProfileTile({super.key, required this.icon, required this.text, this.onTap});
+  const ProfileTile(
+      {super.key, required this.icon, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
