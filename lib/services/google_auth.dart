@@ -55,11 +55,23 @@ class GoogleAuthService {
           'google_id': googleUser.id,
           'is_logged': true,
         });
+      } else{
+        await supabase.from('user').update({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'is_logged': true,
+        }).eq('google_id', googleUser.id);
       }
     }
   }
 
   Future<void> signOut() async {
+    final user = supabase.auth.currentUser;
+    if (user != null) {
+      await supabase.from('user').update({
+        'is_logged': false,
+      }).eq('google_id', user.userMetadata?['sub']);
+    }
     await supabase.auth.signOut();
   }
 }
