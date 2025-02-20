@@ -47,42 +47,45 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
       body: Stack(
         children: [
-          ListView.builder(
-            itemCount: persons.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(25),
-                    child: Image.network(
-                      persons[index].imageUrl,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 80.0), // Add padding at the bottom
+            child: ListView.builder(
+              itemCount: persons.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0,),
+                  child: ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ),
-                  title: Text(
-                    persons[index].name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: Image.network(
+                        persons[index].imageUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  trailing: Text(
-                    '${persons[index].distance} km',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                    title: Text(
+                      persons[index].name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    trailing: Text(
+                      '${persons[index].distance} km',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () => _showUserModal(context, persons[index]),
                   ),
-                  onTap: () => _showUserModal(context, persons[index]),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           Positioned(
             bottom: 110,
