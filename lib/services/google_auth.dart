@@ -1,12 +1,14 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GoogleAuthService {
   final supabase = Supabase.instance.client;
 
   Future<void> signInWithGoogle() async {
-    const webClientId = '892122263088-s6rr0qlfeisuukvtcfv9frl5ir33vusi.apps.googleusercontent.com';
-    const iosClientId = '892122263088-mjo6pk4sfokfi10edea5rq0s7fpj0ihd.apps.googleusercontent.com';
+    await dotenv.load(fileName: '.env');
+    String webClientId = dotenv.get("WEB_CLIENT_ID");
+    String iosClientId = dotenv.get("IOS_CLIENT_ID");
 
     final googleSignIn = GoogleSignIn(
       clientId: iosClientId,
