@@ -32,6 +32,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
+          iconTheme: IconThemeData(color: Colors.white),
       ),
       backgroundColor: Colors.black,
       body: Padding(
