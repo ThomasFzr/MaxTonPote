@@ -42,7 +42,7 @@ class GoogleAuthService {
       final userExist = await supabase
           .from("user")
           .select()
-          .eq("google_id", user.id)
+          .eq("google_id", googleUser.id)
           .maybeSingle();
 
       if (userExist == null) {
