@@ -94,8 +94,8 @@ class HomePage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AddFriendPage()),
                 );
                 },
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+              child: const Icon(Icons.add, color: Colors.black),
             ),
           ),
         ],
