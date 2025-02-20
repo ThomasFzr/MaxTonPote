@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GoogleAuthService {
@@ -33,6 +34,29 @@ class GoogleAuthService {
       idToken: idToken,
       accessToken: accessToken,
     );
+
+    final user = supabase.auth.currentUser;
+    if (user != null) {
+      final position = await geo.Geolocator.getCurrentPosition();
+
+      final userExist = await supabase
+          .from("user")
+          .select()
+          .eq("google_id", user.id)
+          .maybeSingle();
+
+      if (userExist == null) {
+        await supabase.from('user').upsert({
+          'email': user.email,
+          'fullname': user.userMetadata?['name'] ?? '',
+          'avatar_url': user.userMetadata?['picture'] ?? '',
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'google_id': googleUser.id,
+          'is_logged': true,
+        });
+      }
+    }
   }
 
   Future<void> signOut() async {
