@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'add_friend.dart';
 
 class Person {
   String name;
@@ -44,42 +45,60 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
-      body: ListView.builder(
-        itemCount: persons.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Image.network(
-                  persons[index].imageUrl,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: persons.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Image.network(
+                      persons[index].imageUrl,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  title: Text(
+                    persons[index].name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: Text(
+                    '${persons[index].distance} km',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onTap: () => _showUserModal(context, persons[index]),
                 ),
-              ),
-              title: Text(
-                persons[index].name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              trailing: Text(
-                '${persons[index].distance} km',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onTap: () => _showUserModal(context, persons[index]),
+              );
+            },
+          ),
+          Positioned(
+            bottom: 110,
+            right: 20,
+            child: FloatingActionButton(
+                onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddFriendPage()),
+                );
+                },
+              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
