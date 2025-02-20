@@ -1,9 +1,11 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import '../services/google_auth.dart';
 
 class ProfilePage extends StatelessWidget {
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final String? _userId;
+  final user = Supabase.instance.client.auth.currentUser;
 
   ProfilePage({super.key, required String? userId}) : _userId = userId;
 
@@ -20,8 +22,7 @@ class ProfilePage extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 50),
+                    padding: const EdgeInsets.only(bottom: 50),
                     child: ElevatedButton(
                       onPressed: () async {
                         await _googleAuthService.signInWithGoogle();
@@ -36,13 +37,13 @@ class ProfilePage extends StatelessWidget {
                 ),
               )
             else ...[
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage('https://picsum.photos/200'),
+                backgroundImage: NetworkImage(user?.userMetadata?['avatar_url']),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'John Doe',
+              Text(
+                user?.userMetadata?['name'],
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -50,8 +51,8 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'johndoe@example.com',
+              Text(
+                user?.userMetadata?['email'],
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
@@ -62,12 +63,6 @@ class ProfilePage extends StatelessWidget {
               Expanded(
                 child: ListView(
                   children: [
-                    const ProfileTile(
-                        icon: Icons.location_on, text: 'Lyon, France'),
-                    const ProfileTile(
-                        icon: Icons.phone, text: '+33 6 12 34 56 78'),
-                    const ProfileTile(
-                        icon: Icons.cake, text: 'Born: January 1, 1990'),
                     const ProfileTile(icon: Icons.settings, text: 'Settings'),
                     ProfileTile(
                       icon: Icons.logout,
