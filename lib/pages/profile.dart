@@ -5,8 +5,9 @@ import '../services/google_auth.dart';
 class ProfilePage extends StatelessWidget {
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final user = Supabase.instance.client.auth.currentUser;
+  final String? _userId;
 
-  ProfilePage({super.key});
+  ProfilePage({super.key, required String? userId}) : _userId = userId;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (user == null)
+            if (_userId == null)
               Expanded(
                 child: Center(
                   child: Padding(

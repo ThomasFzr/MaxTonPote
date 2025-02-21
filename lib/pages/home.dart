@@ -13,18 +13,21 @@ class Person {
 }
 
 class HomeApp extends StatelessWidget {
-  const HomeApp({super.key});
+  final String? _userId;
+
+  const HomeApp({super.key, required String? userId}) : _userId = userId;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: HomePage(userId: _userId),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
+  final String? _userId;
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final user = Supabase.instance.client.auth.currentUser;
   final List<String> names = [
@@ -52,6 +55,8 @@ class HomePage extends StatelessWidget {
 
   final Random random = Random();
 
+  HomePage({super.key, required String? userId}) : _userId = userId;
+
   @override
   Widget build(BuildContext context) {
     List<Person> persons = List.generate(
@@ -67,7 +72,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
       body: Stack(
         children: [
-          if (user == null)
+          if (_userId == null)
             Expanded(
               child: Center(
                 child: Padding(
