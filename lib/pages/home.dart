@@ -184,7 +184,7 @@ class _HomePageState extends State<HomePage> {
       ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.fromLTRB(20, 5, 20, 120),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -228,13 +228,6 @@ class _HomePageState extends State<HomePage> {
                   'DEMANDER UN MAXAGE',
                   style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                ),
-                child: const Text('Close'),
               ),
             ],
           ),
