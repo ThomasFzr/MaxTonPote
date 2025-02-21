@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:math';
 
 class AddFriendPage extends StatefulWidget {
@@ -9,14 +10,11 @@ class AddFriendPage extends StatefulWidget {
 
 class _AddFriendPageState extends State<AddFriendPage> {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
+
   List<dynamic> _users = [];
   bool _isLoading = true;
   final Random random = Random();
   int? _selectedIndex;
-
-  // Your location (Replace with actual dynamic location data)
-  final double myLatitude = 37.7749; // Example: San Francisco, CA
-  final double myLongitude = -122.4194;
 
   @override
   void initState() {
@@ -25,6 +23,8 @@ class _AddFriendPageState extends State<AddFriendPage> {
   }
 
   Future<void> _fetchUsers() async {
+    final position = await geo.Geolocator.getCurrentPosition();
+
     try {
       final List<dynamic> response =
           await _supabaseClient.from('users').select();
@@ -32,12 +32,12 @@ class _AddFriendPageState extends State<AddFriendPage> {
       List<dynamic> usersWithDistance = response.map((user) {
         double userLat = user['latitude'] ?? 0.0;
         double userLon = user['longitude'] ?? 0.0;
-        double distance =
-            _calculateDistance(myLatitude, myLongitude, userLat, userLon);
+        double distance = _calculateDistance(
+            position.latitude, position.longitude, userLat, userLon);
 
         return {
           ...user,
-          'distance': distance, // Add calculated distance
+          'distance': distance,
         };
       }).toList();
 
@@ -53,10 +53,9 @@ class _AddFriendPageState extends State<AddFriendPage> {
     }
   }
 
-  // Haversine formula to calculate distance between two points
   double _calculateDistance(
       double lat1, double lon1, double lat2, double lon2) {
-    const double R = 6371; // Radius of Earth in km
+    const double R = 6371;
     double dLat = _degreesToRadians(lat2 - lat1);
     double dLon = _degreesToRadians(lon2 - lon1);
     double a = sin(dLat / 2) * sin(dLat / 2) +
@@ -65,7 +64,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
             sin(dLon / 2) *
             sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c; // Distance in km
+    return R * c;
   }
 
   double _degreesToRadians(double degrees) {
