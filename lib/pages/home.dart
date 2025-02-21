@@ -5,11 +5,12 @@ import 'add_friend.dart';
 import '../services/google_auth.dart';
 
 class Person {
+  String id;
   String name;
   String imageUrl;
   int distance;
 
-  Person(this.name, this.imageUrl, this.distance);
+  Person(this.id, this.name, this.imageUrl, this.distance);
 }
 
 class HomeApp extends StatelessWidget {
@@ -26,131 +27,150 @@ class HomeApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
-  final String? _userId;
-  final GoogleAuthService _googleAuthService = GoogleAuthService();
-  final user = Supabase.instance.client.auth.currentUser;
-  final List<String> names = [
-    'Alice',
-    'Bob',
-    'Charlie',
-    'David',
-    'Emma',
-    'Frank',
-    'Grace',
-    'Henry',
-    'Isabella',
-    'Jack',
-    'Katie',
-    'Leo',
-    'Mia',
-    'Nathan',
-    'Olivia',
-    'Paul',
-    'Quincy',
-    'Rachel',
-    'Samuel',
-    'Tina'
-  ];
+class HomePage extends StatefulWidget {
+  final String? userId;
 
+  const HomePage({super.key, required this.userId});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final SupabaseClient _supabaseClient = Supabase.instance.client;
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+  List<Person> _friends = [];
+  bool _isLoading = true;
   final Random random = Random();
 
-  HomePage({super.key, required String? userId}) : _userId = userId;
+  @override
+  void initState() {
+    super.initState();
+    _fetchFriends();
+  }
+
+  Future<void> _fetchFriends() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final List<dynamic> friendList = await _supabaseClient
+          .from('friendship')
+          .select('friend_id_1, friend_id_2')
+          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
+
+      final Set<String> friendIds = friendList
+          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
+          .where((id) => id != user.id)
+          .map((id) => id.toString())
+          .toSet();
+
+      final List<dynamic> response = await _supabaseClient
+          .from('users')
+          .select()
+          .filter('id', 'in', '(${friendIds.join(",")})');
+
+      setState(() {
+        _friends = response
+            .map((user) => Person(
+                  user['id'],
+                  user['name'] ?? 'Unknown',
+                  user['avatar_url'] ??
+                      'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
+                  random.nextInt(50) + 1,
+                ))
+            .toList();
+        _isLoading = false;
+      });
+    } catch (error) {
+      print('Error fetching friends: $error');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<Person> persons = List.generate(
-      20,
-      (index) => Person(
-        names[index],
-        'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
-        random.nextInt(50) + 1,
-      ),
-    );
-
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
-      body: Stack(
-        children: [
-          if (_userId == null)
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 50),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await _googleAuthService.signInWithGoogle();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text("Sign in with Google"),
-                  ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _friends.isEmpty
+              ? widget.userId == null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 50),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await _googleAuthService.signInWithGoogle();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                            ),
+                            child: const Text("Sign in with Google"),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Center(
+                      child: Text(
+                        'No friends found',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )
+              : ListView.builder(
+                  itemCount: _friends.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6.0,
+                        horizontal: 6.0,
+                      ),
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(25),
+                          child: Image.network(
+                            _friends[index].imageUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        title: Text(
+                          _friends[index].name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: Text(
+                          '${_friends[index].distance} km',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () => _showUserModal(context, _friends[index]),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            )
-          else ...[
-            Padding(
-              padding: const EdgeInsets.only(
-                  bottom: 80.0), // Add padding at the bottom
-              child: ListView.builder(
-                itemCount: persons.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 6.0,
-                      horizontal: 6.0,
-                    ),
-                    child: ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: Image.network(
-                          persons[index].imageUrl,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      title: Text(
-                        persons[index].name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      trailing: Text(
-                        '${persons[index].distance} km',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onTap: () => _showUserModal(context, persons[index]),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Positioned(
-              bottom: 110,
-              right: 20,
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddFriendPage()),
-                  );
-                },
-                backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                child: const Icon(Icons.add, color: Colors.black),
-              ),
-            ),
-          ]
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddFriendPage()),
+          );
+        },
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
@@ -177,10 +197,7 @@ class HomePage extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(
-                height: 20,
-                width: 400,
-              ),
+              const SizedBox(height: 20),
               Text(
                 person.name,
                 style: const TextStyle(
@@ -197,7 +214,7 @@ class HomePage extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
                   debugPrint('${person.name} button clicked!');
@@ -212,7 +229,6 @@ class HomePage extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
               ),
-              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
