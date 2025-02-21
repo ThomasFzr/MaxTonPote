@@ -279,23 +279,60 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {
-                  debugPrint('${person.name} button clicked!');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    debugPrint('${person.name} button clicked!');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
+                  ),
+                  child: const Text(
+                    'DEMANDER UN MAXAGE',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
                 ),
-                child: const Text(
-                  'DEMANDER UN MAXAGE',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+              const SizedBox(height: 5),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final user = _supabaseClient.auth.currentUser;
+                    if (user == null) return;
+
+                    try {
+                      await _supabaseClient.from('friendship').delete().or(
+                          'friend_id_1.eq.${user.id}.and.friend_id_2.eq.${person.id}, friend_id_1.eq.${person.id}.and.friend_id_2.eq.${user.id}');
+
+                      setState(() {
+                        _friends
+                            .removeWhere((friend) => friend.id == person.id);
+                      });
+
+                      Navigator.pop(context);
+                    } catch (error) {
+                      print("Error deleting friend: $error");
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 106, 0, 0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
+                  ),
+                  child: const Text(
+                    "SUPPRIMER L'AMI",
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
                 ),
               ),
             ],
           ),
         );
+      
       },
     );
   }
