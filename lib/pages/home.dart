@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'add_friend.dart';
 import '../services/google_auth.dart';
 
@@ -62,6 +63,24 @@ class _HomePageState extends State<HomePage> {
     _fetchFriends();
   }
 
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
+    const double R = 6371;
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_degreesToRadians(lat1)) *
+            cos(_degreesToRadians(lat2)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return R * c;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
+  }
+
   Future<void> _fetchFriends() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) {
@@ -72,6 +91,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     try {
+      final position = await geo.Geolocator.getCurrentPosition();
+
       final List<dynamic> friendList = await _supabaseClient
           .from('friendship')
           .select('friend_id_1, friend_id_2')
@@ -97,15 +118,20 @@ class _HomePageState extends State<HomePage> {
           .filter('id', 'in', '(${friendIds.join(",")})');
 
       setState(() {
-        _friends = response
-            .map((user) => Person(
-                  user['id'],
-                  user['name'] ?? 'Unknown',
-                  user['avatar_url'] ??
-                      'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
-                  random.nextInt(50) + 1,
-                ))
-            .toList();
+        _friends = response.map((friend) {
+          double friendLat = friend['latitude'] ?? 0.0;
+          double friendLon = friend['longitude'] ?? 0.0;
+          double distance = _calculateDistance(
+              position.latitude, position.longitude, friendLat, friendLon);
+
+          return Person(
+            friend['id'],
+            friend['name'] ?? 'Unknown',
+            friend['avatar_url'] ??
+                'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
+            distance.toInt(),
+          );
+        }).toList();
         _isLoading = false;
       });
     } catch (error) {
