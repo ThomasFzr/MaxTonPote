@@ -192,12 +192,16 @@ class _HomePageState extends State<HomePage> {
                       bottom: 110,
                       right: 20,
                       child: FloatingActionButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => AddFriendPage()),
                           );
+
+                          if (result == true) {
+                            _fetchFriends();
+                          }
                         },
                         backgroundColor:
                             const Color.fromARGB(255, 255, 255, 255),

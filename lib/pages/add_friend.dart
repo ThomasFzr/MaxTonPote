@@ -72,38 +72,38 @@ class _AddFriendPageState extends State<AddFriendPage> {
     }
   }
 
-  Future<void> _addFriend(String friendId) async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
+Future<void> _addFriend(String friendId) async {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return;
 
-    try {
-      await _supabaseClient.from('friendship').insert({
-        'friend_id_1': user.id,
-        'friend_id_2': friendId,
-      });
+  try {
+    await _supabaseClient.from('friendship').insert({
+      'friend_id_1': user.id,
+      'friend_id_2': friendId,
+    });
 
-      // Show Snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Friend added successfully!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Friend added successfully!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
 
-      _fetchUsers();
-    } catch (error) {
-      print('Error adding friend: $error');
+    Navigator.pop(context, true);
+  } catch (error) {
+    print('Error adding friend: $error');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to add friend. Try again.'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to add friend. Try again.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+}
+
 
   double _calculateDistance(
       double lat1, double lon1, double lat2, double lon2) {
