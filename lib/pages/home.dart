@@ -177,9 +177,12 @@ class _HomePageState extends State<HomePage> {
                             itemCount: _friends.length,
                             itemBuilder: (context, index) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 6.0,
-                                  horizontal: 6.0,
+                                padding: EdgeInsets.only(
+                                  top: 6.0,
+                                  left: 6.0,
+                                  right: 6.0,
+                                  bottom:
+                                      index == _friends.length - 1 ? 80.0 : 6.0,
                                 ),
                                 child: ListTile(
                                   shape: RoundedRectangleBorder(
@@ -332,7 +335,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         );
-      
       },
     );
   }
