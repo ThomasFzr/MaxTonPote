@@ -10,7 +10,6 @@ class AddFriendPage extends StatefulWidget {
 
 class _AddFriendPageState extends State<AddFriendPage> {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
-
   List<dynamic> _users = [];
   bool _isLoading = true;
   final Random random = Random();
@@ -23,13 +22,33 @@ class _AddFriendPageState extends State<AddFriendPage> {
   }
 
   Future<void> _fetchUsers() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      print("No logged-in user.");
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
     final position = await geo.Geolocator.getCurrentPosition();
 
     try {
-      final List<dynamic> response =
-          await _supabaseClient.from('users').select();
+      final List<dynamic> friendList = await _supabaseClient
+          .from('friendship')
+          .select('friend_id_1, friend_id_2')
+          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
 
-      List<dynamic> usersWithDistance = response.map((user) {
+      final Set<String> friendIds = friendList
+          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
+          .map((id) => id.toString())
+          .toSet();
+
+      final List<dynamic> response =
+          await _supabaseClient.from('users').select().neq('id', user.id);
+
+      List<dynamic> usersWithDistance =
+          response.where((u) => !friendIds.contains(u['id'])).map((user) {
         double userLat = user['latitude'] ?? 0.0;
         double userLon = user['longitude'] ?? 0.0;
         double distance = _calculateDistance(
@@ -50,6 +69,39 @@ class _AddFriendPageState extends State<AddFriendPage> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _addFriend(String friendId) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await _supabaseClient.from('friendship').insert({
+        'friend_id_1': user.id,
+        'friend_id_2': friendId,
+      });
+
+      // Show Snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Friend added successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      _fetchUsers();
+    } catch (error) {
+      print('Error adding friend: $error');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add friend. Try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -124,7 +176,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
                               ),
                             ),
                             trailing: Text(
-                              '${(user['distance'] ?? 0).toStringAsFixed(1)} km', // Ensure distance is not null
+                              '${(user['distance'] ?? 0).toStringAsFixed(1)} km',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -143,7 +195,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0, vertical: 8.0),
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () => _addFriend(user['id']),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
