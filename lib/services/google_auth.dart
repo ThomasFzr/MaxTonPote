@@ -40,27 +40,26 @@ class GoogleAuthService {
       final position = await geo.Geolocator.getCurrentPosition();
 
       final userExist = await supabase
-          .from("user")
+          .from("users")
           .select()
-          .eq("google_id", googleUser.id)
+          .eq("id", user.id)
           .maybeSingle();
 
       if (userExist == null) {
-        await supabase.from('user').upsert({
+        await supabase.from('users').upsert({
           'email': user.email,
-          'fullname': user.userMetadata?['name'] ?? '',
+          'name': user.userMetadata?['name'] ?? '',
           'avatar_url': user.userMetadata?['picture'] ?? '',
           'latitude': position.latitude,
           'longitude': position.longitude,
-          'google_id': googleUser.id,
           'is_logged': true,
         });
       } else{
-        await supabase.from('user').update({
+        await supabase.from('users').update({
           'latitude': position.latitude,
           'longitude': position.longitude,
           'is_logged': true,
-        }).eq('google_id', googleUser.id);
+        }).eq('id', user.id);
       }
     }
   }
@@ -68,9 +67,9 @@ class GoogleAuthService {
   Future<void> signOut() async {
     final user = supabase.auth.currentUser;
     if (user != null) {
-      await supabase.from('user').update({
+      await supabase.from('users').update({
         'is_logged': false,
-      }).eq('google_id', user.userMetadata?['sub']);
+      }).eq('id', user.id);
     }
     await supabase.auth.signOut();
   }
