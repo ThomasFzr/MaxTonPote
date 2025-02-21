@@ -94,74 +94,91 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _friends.isEmpty
-              ? widget.userId == null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 50),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              await _googleAuthService.signInWithGoogle();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
-                            ),
-                            child: const Text("Sign in with Google"),
-                          ),
-                        ),
-                      ],
-                    )
-                  : const Center(
-                      child: Text(
-                        'No friends found',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )
-              : ListView.builder(
-                  itemCount: _friends.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 6.0,
-                        horizontal: 6.0,
-                      ),
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(25),
-                          child: Image.network(
-                            _friends[index].imageUrl,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        title: Text(
-                          _friends[index].name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: Text(
-                          '${_friends[index].distance} km',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        onTap: () => _showUserModal(context, _friends[index]),
-                      ),
-                    );
+      body: widget.userId == null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 50),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await _googleAuthService.signInWithGoogle();
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text("Sign in with Google"),
                 ),
+              ),
+            )
+          : _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _friends.isEmpty
+                  ? widget.userId == null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 50),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await _googleAuthService.signInWithGoogle();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                ),
+                                child: const Text("Sign in with Google"),
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Center(
+                          child: Text(
+                            'No friends found',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        )
+                  : ListView.builder(
+                      itemCount: _friends.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6.0,
+                            horizontal: 6.0,
+                          ),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(25),
+                              child: Image.network(
+                                _friends[index].imageUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            title: Text(
+                              _friends[index].name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            trailing: Text(
+                              '${_friends[index].distance} km',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onTap: () =>
+                                _showUserModal(context, _friends[index]),
+                          ),
+                        );
+                      },
+                    ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
