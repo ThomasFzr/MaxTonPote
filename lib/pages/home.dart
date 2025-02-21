@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_friend.dart';
+import '../services/google_auth.dart';
 
 class Person {
   String name;
@@ -23,11 +25,29 @@ class HomeApp extends StatelessWidget {
 }
 
 class HomePage extends StatelessWidget {
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+  final user = Supabase.instance.client.auth.currentUser;
   final List<String> names = [
-    'Alice', 'Bob', 'Charlie', 'David', 'Emma',
-    'Frank', 'Grace', 'Henry', 'Isabella', 'Jack',
-    'Katie', 'Leo', 'Mia', 'Nathan', 'Olivia',
-    'Paul', 'Quincy', 'Rachel', 'Samuel', 'Tina'
+    'Alice',
+    'Bob',
+    'Charlie',
+    'David',
+    'Emma',
+    'Frank',
+    'Grace',
+    'Henry',
+    'Isabella',
+    'Jack',
+    'Katie',
+    'Leo',
+    'Mia',
+    'Nathan',
+    'Olivia',
+    'Paul',
+    'Quincy',
+    'Rachel',
+    'Samuel',
+    'Tina'
   ];
 
   final Random random = Random();
@@ -47,60 +67,84 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 80.0), // Add padding at the bottom
-            child: ListView.builder(
-              itemCount: persons.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0,),
-                  child: ListTile(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          if (user == null)
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _googleAuthService.signInWithGoogle();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
                     ),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(25),
-                      child: Image.network(
-                        persons[index].imageUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    title: Text(
-                      persons[index].name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: Text(
-                      '${persons[index].distance} km',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onTap: () => _showUserModal(context, persons[index]),
+                    child: const Text("Sign in with Google"),
                   ),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            bottom: 110,
-            right: 20,
-            child: FloatingActionButton(
-                onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddFriendPage()),
-                );
+                ),
+              ),
+            )
+          else ...[
+            Padding(
+              padding: const EdgeInsets.only(
+                  bottom: 80.0), // Add padding at the bottom
+              child: ListView.builder(
+                itemCount: persons.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6.0,
+                      horizontal: 6.0,
+                    ),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image.network(
+                          persons[index].imageUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      title: Text(
+                        persons[index].name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      trailing: Text(
+                        '${persons[index].distance} km',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () => _showUserModal(context, persons[index]),
+                    ),
+                  );
                 },
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-              child: const Icon(Icons.add, color: Colors.black),
+              ),
             ),
-          ),
+            Positioned(
+              bottom: 110,
+              right: 20,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AddFriendPage()),
+                  );
+                },
+                backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                child: const Icon(Icons.add, color: Colors.black),
+              ),
+            ),
+          ]
         ],
       ),
     );
@@ -128,7 +172,10 @@ class HomePage extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 20, width: 400,),
+              const SizedBox(
+                height: 20,
+                width: 400,
+              ),
               Text(
                 person.name,
                 style: const TextStyle(
@@ -152,7 +199,8 @@ class HomePage extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                 ),
                 child: const Text(
                   'DEMANDER UN MAXAGE',

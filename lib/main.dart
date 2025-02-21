@@ -31,22 +31,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 1;
-  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    supabase.auth.onAuthStateChange.listen((data) {
-      setState(() {
-        _userId = data.session?.user.id;
-      });
-    });
   }
 
   List<Widget> _pages() => [
     const MapPage(),
     const HomeApp(),
-    ProfilePage(userId: _userId),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
