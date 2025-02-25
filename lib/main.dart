@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/home.dart';
 import 'pages/map.dart';
 import 'pages/profile.dart';
+import 'providers/friend_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +19,20 @@ Future<void> main() async {
   String supabaseKey = dotenv.get("SUPABASE_API_KEY");
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
-  runApp(const MyApp());
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FriendProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-final supabase = Supabase.instance.client;
-
+// ✅ AJOUTE CE CODE ICI pour éviter l'erreur "MyApp isn't a class"
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -36,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    supabase.auth.onAuthStateChange.listen((data) {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       setState(() {
         _userId = data.session?.user.id;
       });
@@ -65,7 +74,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text(
             'MAX TON POTE',
             style: TextStyle(
-              color: Color.fromARGB(255, 255, 255, 255),
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -90,16 +99,8 @@ class _MyAppState extends State<MyApp> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-          unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-          selectedIconTheme:
-              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-          unselectedIconTheme:
-              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-          selectedLabelStyle:
-              const TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-          unselectedLabelStyle:
-              const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(0.5),
           onTap: _onItemTapped,
         ),
       ),
