@@ -317,6 +317,14 @@ class _HomePageState extends State<HomePage> {
                       });
 
                       Navigator.pop(context);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Friend removed successfully!'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     } catch (error) {
                       print("Error deleting friend: $error");
                     }
