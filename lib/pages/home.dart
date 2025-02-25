@@ -309,7 +309,7 @@ class _HomePageState extends State<HomePage> {
 
                     try {
                       await _supabaseClient.from('friendship').delete().or(
-                          'friend_id_1.eq.${user.id}.and.friend_id_2.eq.${person.id}, friend_id_1.eq.${person.id}.and.friend_id_2.eq.${user.id}');
+                          'and(friend_id_1.eq.${user.id}, friend_id_2.eq.${person.id}), and(friend_id_1.eq.${person.id}, friend_id_2.eq.${user.id})');
 
                       setState(() {
                         _friends
