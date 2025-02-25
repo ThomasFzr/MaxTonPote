@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:async';
+import 'dart:typed_data';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -16,6 +18,7 @@ class _MapPageState extends State<MapPage> {
   mp.PointAnnotationManager? pointAnnotationManager;
   geo.Position? userPosition;
   StreamSubscription<geo.Position>? positionStreamSubscription;
+  final SupabaseClient _supabaseClient = Supabase.instance.client;
 
   @override
   void dispose() {
@@ -86,20 +89,7 @@ class _MapPageState extends State<MapPage> {
       zoom: 14,
     ), mp.MapAnimationOptions());
 
-    try {
-      final ByteData bytes = await rootBundle.load('assets/mark.png');
-      final Uint8List imageData = bytes.buffer.asUint8List();
-
-      mp.PointAnnotationOptions options = mp.PointAnnotationOptions(
-        geometry: mp.Point(coordinates: mp.Position(4.8357, 45.7640)),
-        image: imageData,
-        iconSize: 0.2,
-      );
-
-      await pointAnnotationManager?.create(options);
-    } catch (e) {
-      debugPrint("Error loading image: $e");
-    }
+    await _fetchAndShowFriends();
 
     positionStreamSubscription = geo.Geolocator.getPositionStream().listen((geo.Position position) {
       userPosition = position;
@@ -108,6 +98,58 @@ class _MapPageState extends State<MapPage> {
         zoom: 14,
       ), mp.MapAnimationOptions());
     });
+  }
+
+  Future<void> _fetchAndShowFriends() async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final List<dynamic> friendList = await _supabaseClient
+          .from('friendship')
+          .select('friend_id_1, friend_id_2')
+          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
+
+      final Set<String> friendIds = friendList
+          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
+          .where((id) => id != user.id)
+          .map((id) => id.toString())
+          .toSet();
+
+      if (friendIds.isEmpty) return;
+
+      final List<dynamic> response = await _supabaseClient
+          .from('users')
+          .select()
+          .filter('id', 'in', '(${friendIds.join(",")})');
+
+      for (var friend in response) {
+        double friendLat = friend['latitude'] ?? 0.0;
+        double friendLon = friend['longitude'] ?? 0.0;
+        String avatarUrl = friend['avatar_url'] ?? 'https://picsum.photos/100/100';
+        
+        _addFriendMarker(friendLat, friendLon, avatarUrl);
+      }
+    } catch (error) {
+      debugPrint("Error fetching friends: $error");
+    }
+  }
+
+  Future<void> _addFriendMarker(double lat, double lon, String avatarUrl) async {
+    try {
+      final ByteData bytes = await rootBundle.load('assets/mark.png');
+      final Uint8List imageData = bytes.buffer.asUint8List();
+
+      mp.PointAnnotationOptions options = mp.PointAnnotationOptions(
+        geometry: mp.Point(coordinates: mp.Position(lon, lat)),
+        image: imageData,
+        iconSize: 0.2,
+      );
+
+      await pointAnnotationManager?.create(options);
+    } catch (e) {
+      debugPrint("Error adding friend marker: $e");
+    }
   }
 
   Future<void> _recenterCamera() async {
