@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapPage extends StatefulWidget {
@@ -13,16 +12,40 @@ class MapPage extends StatefulWidget {
   _MapPageState createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
   late mp.MapboxMap mapboxMap;
   mp.PointAnnotationManager? pointAnnotationManager;
   geo.Position? userPosition;
   StreamSubscription<geo.Position>? positionStreamSubscription;
   final SupabaseClient _supabaseClient = Supabase.instance.client;
+  late AnimationController _animationController;
+  late Animation<double> _pulseAnimation;
+  Timer? _pulseTimer;
+  Map<String, mp.PointAnnotation> friendMarkers = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+
+ _pulseAnimation = Tween<double>(begin: 0.5, end: 0.8).animate(
+  CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+);
+
+    _pulseTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      _updateFriendMarkers();
+    });
+  }
 
   @override
   void dispose() {
     positionStreamSubscription?.cancel();
+    _animationController.dispose();
+    _pulseTimer?.cancel();
     super.dispose();
   }
 
@@ -126,16 +149,17 @@ class _MapPageState extends State<MapPage> {
       for (var friend in response) {
         double friendLat = friend['latitude'] ?? 0.0;
         double friendLon = friend['longitude'] ?? 0.0;
+        String friendId = friend['id'];
         String avatarUrl = friend['avatar_url'] ?? 'https://picsum.photos/100/100';
-        
-        _addFriendMarker(friendLat, friendLon, avatarUrl);
+
+        _addFriendMarker(friendId, friendLat, friendLon, avatarUrl);
       }
     } catch (error) {
       debugPrint("Error fetching friends: $error");
     }
   }
 
-  Future<void> _addFriendMarker(double lat, double lon, String avatarUrl) async {
+  Future<void> _addFriendMarker(String friendId, double lat, double lon, String avatarUrl) async {
     try {
       final ByteData bytes = await rootBundle.load('assets/mark.png');
       final Uint8List imageData = bytes.buffer.asUint8List();
@@ -143,12 +167,23 @@ class _MapPageState extends State<MapPage> {
       mp.PointAnnotationOptions options = mp.PointAnnotationOptions(
         geometry: mp.Point(coordinates: mp.Position(lon, lat)),
         image: imageData,
-        iconSize: 0.2,
+        iconSize: _pulseAnimation.value,
       );
 
-      await pointAnnotationManager?.create(options);
+      mp.PointAnnotation? marker = await pointAnnotationManager?.create(options);
+      
+      if (marker != null) {
+        friendMarkers[friendId] = marker;
+      }
     } catch (e) {
       debugPrint("Error adding friend marker: $e");
+    }
+  }
+
+  void _updateFriendMarkers() {
+    for (var marker in friendMarkers.values) {
+      marker.iconSize = _pulseAnimation.value;
+      pointAnnotationManager?.update(marker);
     }
   }
 
