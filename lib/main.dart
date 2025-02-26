@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,17 +8,27 @@ import 'pages/home.dart';
 import 'pages/map.dart';
 import 'pages/profile.dart';
 
+// Background notification handler
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Background message: ${message.notification?.title}");
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Load environment variables
   await dotenv.load(fileName: '.env');
   String accessToken = dotenv.get("SK_MAPBOX_TOKEN");
   MapboxOptions.setAccessToken(accessToken);
 
   String supabaseUrl = dotenv.get("SUPABASE_URL");
   String supabaseKey = dotenv.get("SUPABASE_API_KEY");
-
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
+
   runApp(const MyApp());
 }
 
@@ -32,15 +44,48 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 1;
   String? _userId;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   @override
   void initState() {
     super.initState();
-    supabase.auth.onAuthStateChange.listen((data) {
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    supabase.auth.onAuthStateChange.listen((data) async {
       setState(() {
         _userId = data.session?.user.id;
       });
+      if (_userId != null) {
+        _setupFCM();
+      }
     });
+  }
+
+  Future<void> _setupFCM() async {
+    // Request permission
+    NotificationSettings settings = await _firebaseMessaging.requestPermission();
+    
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      // Get FCM token
+      String? token = await _firebaseMessaging.getToken();
+      print("🔥 FCM Token: $token");
+      if (token != null) {
+        await _saveTokenToDatabase(token);
+      }
+    }
+    // Listen for token refresh
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      _saveTokenToDatabase(newToken);
+    });
+  }
+
+  Future<void> _saveTokenToDatabase(String token) async {
+    if (_userId == null) return;
+    await supabase.from('users').update({
+      'fcm_token': token,
+    }).eq('id', _userId!);
   }
 
   List<Widget> _pages() => [
@@ -65,15 +110,15 @@ class _MyAppState extends State<MyApp> {
           title: const Text(
             'MAX TON POTE',
             style: TextStyle(
-              color: Color.fromARGB(255, 255, 255, 255),
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: const Color.fromARGB(255, 18, 18, 18),
+          backgroundColor: Colors.black,
         ),
         body: _pages()[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: const Color.fromARGB(255, 18, 18, 18),
+          backgroundColor: Colors.black,
           elevation: 0,
           items: const [
             BottomNavigationBarItem(
@@ -90,16 +135,8 @@ class _MyAppState extends State<MyApp> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-          unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-          selectedIconTheme:
-              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-          unselectedIconTheme:
-              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-          selectedLabelStyle:
-              const TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-          unselectedLabelStyle:
-              const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
           onTap: _onItemTapped,
         ),
       ),
