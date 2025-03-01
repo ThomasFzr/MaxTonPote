@@ -31,7 +31,7 @@ class ProfilePage extends StatelessWidget {
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
                       ),
-                      child: const Text("Sign in with Google"),
+                      child: const Text("Se connecter avec Google"),
                     ),
                   ),
                 ),

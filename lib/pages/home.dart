@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                   ),
-                  child: const Text("Sign in with Google"),
+                  child: const Text("Se connecter avec Google"),
                 ),
               ),
             )
@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                     _friends.isEmpty
                         ? const Center(
                             child: Text(
-                              'No friends found',
+                              'Aucun ami trouvé',
                               style: TextStyle(color: Colors.white),
                             ),
                           )
@@ -275,7 +275,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 5),
               Text(
-                '${person.distance} km away',
+                'à ${person.distance} km',
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
