@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'add_friend.dart';
-import '../services/google_auth.dart';
 
 class Person {
   String id;
@@ -15,23 +14,21 @@ class Person {
 }
 
 class HomeApp extends StatelessWidget {
-  final String? _userId;
 
-  const HomeApp({super.key, required String? userId}) : _userId = userId;
+  const HomeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(userId: _userId),
+      home: HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  final String? userId;
 
-  const HomePage({super.key, required this.userId});
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -39,7 +36,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
-  final GoogleAuthService _googleAuthService = GoogleAuthService();
   List<Person> _friends = [];
   bool _isLoading = true;
   final Random random = Random();
@@ -146,23 +142,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
-      body: widget.userId == null
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 50),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await _googleAuthService.signInWithGoogle();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text("Se connecter avec Google"),
-                ),
-              ),
-            )
-          : _isLoading
+      body: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : Stack(
                   children: [

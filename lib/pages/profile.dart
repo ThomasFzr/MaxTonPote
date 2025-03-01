@@ -5,9 +5,8 @@ import '../services/google_auth.dart';
 class ProfilePage extends StatelessWidget {
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final user = Supabase.instance.client.auth.currentUser;
-  final String? _userId;
 
-  ProfilePage({super.key, required String? userId}) : _userId = userId;
+  ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,25 +17,6 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (_userId == null)
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 50),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await _googleAuthService.signInWithGoogle();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                      ),
-                      child: const Text("Se connecter avec Google"),
-                    ),
-                  ),
-                ),
-              )
-            else ...[
               CircleAvatar(
                 radius: 60,
                 backgroundImage: NetworkImage(user?.userMetadata?['avatar_url']),
@@ -75,7 +55,6 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
             ],
-          ],
         ),
       ),
     );

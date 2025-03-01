@@ -53,8 +53,8 @@ class _MyAppState extends State<MyApp> {
 
   List<Widget> _pages() => [
         const MapPage(),
-        HomeApp(userId: _userId),
-        ProfilePage(userId: _userId),
+        HomeApp(),
+        ProfilePage(),
       ];
 
   void _onItemTapped(int index) {
