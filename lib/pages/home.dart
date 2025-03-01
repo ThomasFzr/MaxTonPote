@@ -320,7 +320,10 @@ class _HomePageState extends State<HomePage> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Ami supprimé!', style: TextStyle(color: Colors.black),),
+                          content: Text(
+                            'Ami supprimé!',
+                            style: TextStyle(color: Colors.black),
+                          ),
                           backgroundColor: Color.fromARGB(255, 255, 255, 255),
                           duration: Duration(seconds: 2),
                         ),
