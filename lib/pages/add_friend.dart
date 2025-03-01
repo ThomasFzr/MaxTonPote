@@ -84,8 +84,8 @@ class _AddFriendPageState extends State<AddFriendPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Friend added successfully!'),
-          backgroundColor: Colors.green,
+          content: Text('Ami ajouté!', style: TextStyle(color: Colors.black)),
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           duration: Duration(seconds: 2),
         ),
       );
@@ -201,7 +201,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
                                     horizontal: 30, vertical: 12),
                               ),
                               child: const Text(
-                                'Add friend',
+                                'Ajouter en ami',
                                 style: TextStyle(
                                     fontSize: 16, color: Colors.black),
                               ),

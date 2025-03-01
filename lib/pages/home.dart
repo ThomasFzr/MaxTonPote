@@ -320,8 +320,8 @@ class _HomePageState extends State<HomePage> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Friend removed successfully!'),
-                          backgroundColor: Colors.green,
+                          content: Text('Ami supprimé!', style: TextStyle(color: Colors.black),),
+                          backgroundColor: Color.fromARGB(255, 255, 255, 255),
                           duration: Duration(seconds: 2),
                         ),
                       );
@@ -330,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 106, 0, 0),
+                    backgroundColor: const Color.fromARGB(255, 189, 4, 4),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 30, vertical: 12),
                   ),
