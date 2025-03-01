@@ -63,10 +63,10 @@ class ProfilePage extends StatelessWidget {
               Expanded(
                 child: ListView(
                   children: [
-                    const ProfileTile(icon: Icons.settings, text: 'Settings'),
+                    const ProfileTile(icon: Icons.settings, text: 'Paramètres'),
                     ProfileTile(
                       icon: Icons.logout,
-                      text: 'Log Out',
+                      text: 'Déconnexion',
                       onTap: () async {
                         await _googleAuthService.signOut();
                       },
