@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709609810288",
+    "project_id": "maxtonpote-a2481",
+    "storage_bucket": "maxtonpote-a2481.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709609810288:android:30ea11632f6809c8c487b5",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq2wFF7WfeOEtSO7MiWTMDHdNLICZHg2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
