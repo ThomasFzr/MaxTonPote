@@ -1,72 +1,79 @@
-// import 'package:flutter/material.dart';
-// import '../services/friend.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
+import '../services/friend.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// class UserProvider extends ChangeNotifier {
-//   final FriendService _friendService = FriendService();
-//   final _supabase = Supabase.instance.client;
-//   RealtimeChannel? _friendsChannel;
+class UserProvider extends ChangeNotifier {
+  final FriendService _friendService = FriendService();
+  final SupabaseClient _supabase = Supabase.instance.client;
+  RealtimeChannel? _friendsChannel;
 
-//   List<UserModel> _allFriends = [];
-//   List<UserModel> get allFriends => _allFriends;
+  List<Map<String, dynamic>> _allFriends = [];
+  List<Map<String, dynamic>> get allFriends => _allFriends;
 
-//   bool _isLoading = false;
-//   bool get isLoading => _isLoading;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
-//   String? _error;
-//   String? get error => _error;
+  String? _error;
+  String? get error => _error;
 
-//   UserProvider() {
-//     // Charger les données initiales
-//     fetchUsers();
-//     // Initialiser la souscription en temps réel
-//     _initRealtimeSubscription();
-//   }
+  UserProvider() {
+    // Charger les données initiales
+    fetchUsers();
+    // Initialiser la souscription en temps réel
+    _initRealtimeSubscription();
+  }
 
-//   void _initRealtimeSubscription() {
-//     _friendsChannel?.unsubscribe();
+  // Method to initialize the real-time subscription for changes in the friends table
+  void _initRealtimeSubscription() {
+    _friendsChannel?.unsubscribe(); // Unsubscribe from the previous channel if any
 
-//     _friendsChannel = _supabase.channel('friends').onPostgresChanges(
-//       event: PostgresChangeEvent.all,
-//       schema: 'public',
-//       table: 'friends',
-//       callback: (payload) {
-//         print('Changement détecté dans la table friends: ${payload.toString()}');
-//         fetchUsers();
-//       },
-//     )..subscribe((status, [error]) {
-//         print('Status de la souscription: $status');
-//         if (error != null) {
-//           print('Erreur de souscription: $error');
-//         }
-//       });
-//   }
+    // Create a new subscription to the 'friends' table
+    _friendsChannel = _supabase.channel('friends').onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'friends',
+      callback: (payload) {
+        print('Change detected in friends table: ${payload.toString()}');
+        fetchUsers(); // Fetch users again after a change is detected
+      },
+    )..subscribe((status, [error]) {
+        print('Subscription status: $status');
+        if (error != null) {
+          print('Subscription error: $error');
+        }
+      });
+  }
 
-//   Future<void> fetchUsers() async {
-//     try {
-//       _isLoading = true;
-//       _error = null;
-//       notifyListeners();
+  // Fetch all users that are friends
+  Future<void> fetchUsers() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners(); // Notify listeners to indicate loading state
 
-//       final result = await _friendService.fetchFriends();
-//       print('Amis récupérés: ${result.length}');
-//       _allFriends = result.map((json) => UserModel.fromJson(json)).toList();
-//     } catch (e) {
-//       print('Erreur lors de la récupération des amis: $e');
-//       _error = e.toString();
-//     } finally {
-//       _isLoading = false;
-//       notifyListeners();
-//     }
-//   }
+      // Fetch the list of friends from the FriendService
+      final result = await _friendService.fetchFriends();
+      print('Friends fetched: ${result.length}');
 
-//   Future<void> refreshFriends() async {
-//     await fetchUsers();
-//   }
+      // Directly use the fetched result (no need for UserModel conversion)
+      _allFriends = List<Map<String, dynamic>>.from(result);
+    } catch (e) {
+      print('Error fetching friends: $e');
+      _error = e.toString(); // Capture error for later display
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // Notify listeners to indicate loading is complete
+    }
+  }
 
-//   @override
-//   void dispose() {
-//     _friendsChannel?.unsubscribe();
-//     super.dispose();
-//   }
-// }
+  // Refresh the friends list manually
+  Future<void> refreshFriends() async {
+    await fetchUsers(); // Simply re-fetch the users
+  }
+
+  @override
+  void dispose() {
+    _friendsChannel?.unsubscribe(); // Unsubscribe from the channel when disposed
+    super.dispose();
+  }
+}
