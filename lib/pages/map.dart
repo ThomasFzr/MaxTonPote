@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/friend.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -17,11 +17,11 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
   mp.PointAnnotationManager? pointAnnotationManager;
   geo.Position? userPosition;
   StreamSubscription<geo.Position>? positionStreamSubscription;
-  final SupabaseClient _supabaseClient = Supabase.instance.client;
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
   Timer? _pulseTimer;
   Map<String, mp.PointAnnotation> friendMarkers = {};
+  final FriendService _friendService = FriendService();
 
   @override
   void initState() {
@@ -32,9 +32,9 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
 
- _pulseAnimation = Tween<double>(begin: 0.5, end: 0.8).animate(
-  CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-);
+    _pulseAnimation = Tween<double>(begin: 0.5, end: 0.8).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
     _pulseTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       _updateFriendMarkers();
@@ -124,38 +124,17 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _fetchAndShowFriends() async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) return;
+    List<dynamic> friends = await _friendService.fetchFriends();
 
-    try {
-      final List<dynamic> friendList = await _supabaseClient
-          .from('friendship')
-          .select('friend_id_1, friend_id_2')
-          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
+    if (friends.isEmpty) return;
 
-      final Set<String> friendIds = friendList
-          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
-          .where((id) => id != user.id)
-          .map((id) => id.toString())
-          .toSet();
+    for (var friend in friends) {
+      double friendLat = friend['latitude'] ?? 0.0;
+      double friendLon = friend['longitude'] ?? 0.0;
+      String friendId = friend['id'];
+      String avatarUrl = friend['avatar_url'] ?? 'https://picsum.photos/100/100';
 
-      if (friendIds.isEmpty) return;
-
-      final List<dynamic> response = await _supabaseClient
-          .from('users')
-          .select()
-          .filter('id', 'in', '(${friendIds.join(",")})');
-
-      for (var friend in response) {
-        double friendLat = friend['latitude'] ?? 0.0;
-        double friendLon = friend['longitude'] ?? 0.0;
-        String friendId = friend['id'];
-        String avatarUrl = friend['avatar_url'] ?? 'https://picsum.photos/100/100';
-
-        _addFriendMarker(friendId, friendLat, friendLon, avatarUrl);
-      }
-    } catch (error) {
-      debugPrint("Error fetching friends: $error");
+      _addFriendMarker(friendId, friendLat, friendLon, avatarUrl);
     }
   }
 

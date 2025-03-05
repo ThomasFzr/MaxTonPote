@@ -1,10 +1,9 @@
 // import 'package:flutter/material.dart';
-// import 'package:flutter_application_1/services/friends_service.dart';
+// import '../services/friend.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
-// import '../models/user_model.dart';
 
 // class UserProvider extends ChangeNotifier {
-//   final FriendsService _friendService = FriendsService();
+//   final FriendService _friendService = FriendService();
 //   final _supabase = Supabase.instance.client;
 //   RealtimeChannel? _friendsChannel;
 
@@ -49,7 +48,7 @@
 //       _error = null;
 //       notifyListeners();
 
-//       final result = await _friendService.getFriends();
+//       final result = await _friendService.fetchFriends();
 //       print('Amis récupérés: ${result.length}');
 //       _allFriends = result.map((json) => UserModel.fromJson(json)).toList();
 //     } catch (e) {
