@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:geolocator/geolocator.dart' as geo;
 import 'add_friend.dart';
+import '../services/friend.dart';
 
 class Person {
   String id;
   String name;
   String imageUrl;
-  int distance;
+  double distance;
 
   Person(this.id, this.name, this.imageUrl, this.distance);
 }
 
 class HomeApp extends StatelessWidget {
-
   const HomeApp({super.key});
 
   @override
@@ -27,7 +26,6 @@ class HomeApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-
   const HomePage({super.key});
 
   @override
@@ -35,8 +33,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final SupabaseClient _supabaseClient = Supabase.instance.client;
+  final FriendService _friendService = FriendService();
   List<Person> _friends = [];
+  final supabase = Supabase.instance.client;
+
   bool _isLoading = true;
   final Random random = Random();
 
@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    _supabaseClient.auth.onAuthStateChange.listen((data) {
+    supabase.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session?.user != null) {
         _fetchFriends();
@@ -59,73 +59,18 @@ class _HomePageState extends State<HomePage> {
     _fetchFriends();
   }
 
-  double _calculateDistance(
-      double lat1, double lon1, double lat2, double lon2) {
-    const double R = 6371;
-    double dLat = _degreesToRadians(lat2 - lat1);
-    double dLon = _degreesToRadians(lon2 - lon1);
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degreesToRadians(lat1)) *
-            cos(_degreesToRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c;
-  }
-
-  double _degreesToRadians(double degrees) {
-    return degrees * pi / 180;
-  }
-
   Future<void> _fetchFriends() async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
     try {
-      final position = await geo.Geolocator.getCurrentPosition();
-
-      final List<dynamic> friendList = await _supabaseClient
-          .from('friendship')
-          .select('friend_id_1, friend_id_2')
-          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
-
-      final Set<String> friendIds = friendList
-          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
-          .where((id) => id != user.id)
-          .map((id) => id.toString())
-          .toSet();
-
-      if (friendIds.isEmpty) {
-        setState(() {
-          _friends = [];
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final List<dynamic> response = await _supabaseClient
-          .from('users')
-          .select()
-          .filter('id', 'in', '(${friendIds.join(",")})');
-
+      final friends = await _friendService.fetchFriends();
       setState(() {
-        _friends = response.map((friend) {
-          double friendLat = friend['latitude'] ?? 0.0;
-          double friendLon = friend['longitude'] ?? 0.0;
-          double distance = _calculateDistance(
-              position.latitude, position.longitude, friendLat, friendLon);
-
+        _friends = friends.map((friend) {
+          double distance = friend['distance'];
           return Person(
             friend['id'],
             friend['name'] ?? 'Unknown',
             friend['avatar_url'] ??
                 'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
-            distance.toInt(),
+            distance,
           );
         }).toList();
         _isLoading = false;
@@ -143,82 +88,80 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
       body: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Stack(
-                  children: [
-                    _friends.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Aucun ami trouvé',
-                              style: TextStyle(color: Colors.white),
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                _friends.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Aucun ami trouvé',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _friends.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              top: 6.0,
+                              left: 6.0,
+                              right: 6.0,
+                              bottom: index == _friends.length - 1 ? 80.0 : 6.0,
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: _friends.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  top: 6.0,
-                                  left: 6.0,
-                                  right: 6.0,
-                                  bottom:
-                                      index == _friends.length - 1 ? 80.0 : 6.0,
+                            child: ListTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(25),
+                                child: Image.network(
+                                  _friends[index].imageUrl,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
                                 ),
-                                child: ListTile(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  leading: ClipRRect(
-                                    borderRadius: BorderRadius.circular(25),
-                                    child: Image.network(
-                                      _friends[index].imageUrl,
-                                      width: 50,
-                                      height: 50,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    _friends[index].name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  trailing: Text(
-                                    '${_friends[index].distance} km',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onTap: () =>
-                                      _showUserModal(context, _friends[index]),
+                              ),
+                              title: Text(
+                                _friends[index].name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-                            },
-                          ),
-                    Positioned(
-                      bottom: 110,
-                      right: 20,
-                      child: FloatingActionButton(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddFriendPage()),
+                              ),
+                              trailing: Text(
+                                '${_friends[index].distance.toInt()} km',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () =>
+                                  _showUserModal(context, _friends[index]),
+                            ),
                           );
-
-                          if (result == true) {
-                            _fetchFriends();
-                          }
                         },
-                        backgroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        child: const Icon(Icons.add, color: Colors.black),
                       ),
-                    ),
-                  ],
+                Positioned(
+                  bottom: 110,
+                  right: 20,
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddFriendPage()),
+                      );
+
+                      if (result == true) {
+                        _fetchFriends();
+                      }
+                    },
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    child: const Icon(Icons.add, color: Colors.black),
+                  ),
                 ),
+              ],
+            ),
     );
   }
 
@@ -255,7 +198,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 5),
               Text(
-                'à ${person.distance} km',
+                'à ${person.distance.toInt()} km',
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
@@ -284,12 +227,11 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final user = _supabaseClient.auth.currentUser;
+                    final user = supabase.auth.currentUser;
                     if (user == null) return;
 
                     try {
-                      await _supabaseClient.from('friendship').delete().or(
-                          'and(friend_id_1.eq.${user.id}, friend_id_2.eq.${person.id}), and(friend_id_1.eq.${person.id}, friend_id_2.eq.${user.id})');
+                      await _friendService.deleteFriend(person.id);
 
                       setState(() {
                         _friends
