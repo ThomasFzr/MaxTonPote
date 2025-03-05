@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:geolocator/geolocator.dart' as geo;
+import '../services/friend.dart';
 import 'dart:math';
 
 class AddFriendPage extends StatefulWidget {
@@ -9,7 +8,7 @@ class AddFriendPage extends StatefulWidget {
 }
 
 class _AddFriendPageState extends State<AddFriendPage> {
-  final SupabaseClient _supabaseClient = Supabase.instance.client;
+  final FriendService _friendService = FriendService();
   List<dynamic> _users = [];
   bool _isLoading = true;
   final Random random = Random();
@@ -22,44 +21,12 @@ class _AddFriendPageState extends State<AddFriendPage> {
   }
 
   Future<void> _fetchUsers() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) {
-      print("No logged-in user.");
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final position = await geo.Geolocator.getCurrentPosition();
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      final List<dynamic> friendList = await _supabaseClient
-          .from('friendship')
-          .select('friend_id_1, friend_id_2')
-          .or('friend_id_1.eq.${user.id}, friend_id_2.eq.${user.id}');
-
-      final Set<String> friendIds = friendList
-          .expand((friend) => [friend['friend_id_1'], friend['friend_id_2']])
-          .map((id) => id.toString())
-          .toSet();
-
-      final List<dynamic> response =
-          await _supabaseClient.from('users').select().neq('id', user.id);
-
-      List<dynamic> usersWithDistance =
-          response.where((u) => !friendIds.contains(u['id'])).map((user) {
-        double userLat = user['latitude'] ?? 0.0;
-        double userLon = user['longitude'] ?? 0.0;
-        double distance = _calculateDistance(
-            position.latitude, position.longitude, userLat, userLon);
-
-        return {
-          ...user,
-          'distance': distance,
-        };
-      }).toList();
-
+      final usersWithDistance = await _friendService.fetchUsers();
       setState(() {
         _users = usersWithDistance;
         _isLoading = false;
@@ -73,14 +40,8 @@ class _AddFriendPageState extends State<AddFriendPage> {
   }
 
   Future<void> _addFriend(String friendId) async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-
     try {
-      await _supabaseClient.from('friendship').insert({
-        'friend_id_1': user.id,
-        'friend_id_2': friendId,
-      });
+      await _friendService.addFriend(friendId);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -93,7 +54,6 @@ class _AddFriendPageState extends State<AddFriendPage> {
       Navigator.pop(context, true);
     } catch (error) {
       print('Error adding friend: $error');
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to add friend. Try again.'),
@@ -102,24 +62,6 @@ class _AddFriendPageState extends State<AddFriendPage> {
         ),
       );
     }
-  }
-
-  double _calculateDistance(
-      double lat1, double lon1, double lat2, double lon2) {
-    const double R = 6371;
-    double dLat = _degreesToRadians(lat2 - lat1);
-    double dLon = _degreesToRadians(lon2 - lon1);
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degreesToRadians(lat1)) *
-            cos(_degreesToRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c;
-  }
-
-  double _degreesToRadians(double degrees) {
-    return degrees * pi / 180;
   }
 
   @override
