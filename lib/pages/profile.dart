@@ -17,44 +17,45 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundImage: NetworkImage(user?.userMetadata?['avatar_url']),
+            CircleAvatar(
+              radius: 60,
+              backgroundImage: NetworkImage(user?.userMetadata?['avatar_url'] ??
+                  'https://example.com/default-avatar.png'),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              user?.userMetadata?['name'] ?? 'Anonymous',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              const SizedBox(height: 16),
-              Text(
-                user?.userMetadata?['name'],
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              user?.userMetadata?['email'] ?? 'No email provided',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 8),
-              Text(
-                user?.userMetadata?['email'],
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView(
+                children: [
+                  const ProfileTile(icon: Icons.settings, text: 'Paramètres'),
+                  ProfileTile(
+                    icon: Icons.logout,
+                    text: 'Déconnexion',
+                    onTap: () async {
+                      await _googleAuthService.signOut();
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView(
-                  children: [
-                    const ProfileTile(icon: Icons.settings, text: 'Paramètres'),
-                    ProfileTile(
-                      icon: Icons.logout,
-                      text: 'Déconnexion',
-                      onTap: () async {
-                        await _googleAuthService.signOut();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
+          ],
         ),
       ),
     );
