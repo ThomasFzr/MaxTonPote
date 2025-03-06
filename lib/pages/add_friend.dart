@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/friend_service.dart';
-import 'dart:math';
+import 'package:provider/provider.dart';
+import '../providers/friend_provider.dart';
 
 class AddFriendPage extends StatefulWidget {
   @override
@@ -8,10 +8,6 @@ class AddFriendPage extends StatefulWidget {
 }
 
 class _AddFriendPageState extends State<AddFriendPage> {
-  final FriendService _friendService = FriendService();
-  List<dynamic> _users = [];
-  bool _isLoading = true;
-  final Random random = Random();
   int? _selectedIndex;
 
   @override
@@ -21,27 +17,14 @@ class _AddFriendPageState extends State<AddFriendPage> {
   }
 
   Future<void> _fetchUsers() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final usersWithDistance = await _friendService.fetchUsers();
-      setState(() {
-        _users = usersWithDistance;
-        _isLoading = false;
-      });
-    } catch (error) {
-      print('Error fetching users: $error');
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    final friendProvider = Provider.of<FriendProvider>(context, listen: false);
+    await friendProvider.fetchUsers();
   }
 
   Future<void> _addFriend(String friendId) async {
+    final friendProvider = Provider.of<FriendProvider>(context, listen: false);
     try {
-      await _friendService.addFriend(friendId);
+      await friendProvider.addFriend(friendId);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -66,22 +49,24 @@ class _AddFriendPageState extends State<AddFriendPage> {
 
   @override
   Widget build(BuildContext context) {
+    final friendProvider = Provider.of<FriendProvider>(context);
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: _isLoading
+      body: friendProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _users.isEmpty
+          : friendProvider.users.isEmpty
               ? const Center(
                   child: Text('No users found',
                       style: TextStyle(color: Colors.white)))
               : ListView.builder(
-                  itemCount: _users.length,
+                  itemCount: friendProvider.users.length,
                   itemBuilder: (context, index) {
-                    final user = _users[index];
+                    final user = friendProvider.users[index];
                     return Column(
                       children: [
                         Padding(
