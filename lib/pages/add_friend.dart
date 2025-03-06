@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/friend.dart';
+import '../services/friend_service.dart';
 import 'dart:math';
 
 class AddFriendPage extends StatefulWidget {

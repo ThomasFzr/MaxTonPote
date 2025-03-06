@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:async';
-import '../services/friend.dart';
+import '../services/friend_service.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});

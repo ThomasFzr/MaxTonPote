@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_friend.dart';
-import '../services/friend.dart';
+import '../services/friend_service.dart';
 
 class Person {
   String id;
