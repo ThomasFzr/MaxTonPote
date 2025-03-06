@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,6 +9,7 @@ import 'pages/login.dart';
 import 'pages/profile.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'providers/friend_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   await dotenv.load(fileName: '.env');
   String accessToken = dotenv.get("SK_MAPBOX_TOKEN");
   MapboxOptions.setAccessToken(accessToken);
@@ -23,7 +26,15 @@ Future<void> main() async {
   String supabaseKey = dotenv.get("SUPABASE_API_KEY");
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
-  runApp(const MyApp());
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FriendProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 final supabase = Supabase.instance.client;
@@ -50,12 +61,11 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-
-  List<Widget> _pages() => [
-        const MapPage(),
-        HomeApp(),
-        ProfilePage(),
-      ];
+  final List<Widget> _pages = [
+    const MapPage(),
+    HomeApp(),
+    ProfilePage(),
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -68,20 +78,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: _userId == null
-          ? const LoginPage() // Affiche la page de connexion si l'utilisateur n'est pas connecté
+          ? const LoginPage()
           : Scaffold(
               extendBody: true,
               appBar: AppBar(
                 title: const Text(
                   'MAX TON POTE',
                   style: TextStyle(
-                    color: Color.fromARGB(255, 255, 255, 255),
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 backgroundColor: const Color.fromARGB(255, 18, 18, 18),
               ),
-              body: _pages()[_selectedIndex],
+              body: _pages[_selectedIndex],
               bottomNavigationBar: BottomNavigationBar(
                 backgroundColor: const Color.fromARGB(255, 18, 18, 18),
                 elevation: 0,
@@ -100,16 +110,12 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
                 currentIndex: _selectedIndex,
-                selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-                unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-                selectedIconTheme: const IconThemeData(
-                    color: Color.fromARGB(255, 255, 255, 255)),
-                unselectedIconTheme: const IconThemeData(
-                    color: Color.fromARGB(255, 255, 255, 255)),
-                selectedLabelStyle:
-                    const TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-                unselectedLabelStyle:
-                    const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white.withOpacity(0.6),
+                selectedIconTheme: const IconThemeData(color: Colors.white),
+                unselectedIconTheme: const IconThemeData(color: Colors.white54),
+                selectedLabelStyle: const TextStyle(color: Colors.white),
+                unselectedLabelStyle: const TextStyle(color: Colors.black),
                 onTap: _onItemTapped,
               ),
             ),

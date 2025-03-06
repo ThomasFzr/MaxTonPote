@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_friend.dart';
-import '../services/friend_service.dart';
+import '../providers/friend_provider.dart';
 
 class Person {
   String id;
@@ -18,10 +19,7 @@ class HomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-    );
+    return const HomePage();
   }
 }
 
@@ -33,11 +31,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final FriendService _friendService = FriendService();
-  List<Person> _friends = [];
   final supabase = Supabase.instance.client;
-
-  bool _isLoading = true;
   final Random random = Random();
 
   @override
@@ -48,50 +42,35 @@ class _HomePageState extends State<HomePage> {
       final session = data.session;
       if (session?.user != null) {
         _fetchFriends();
-      } else {
-        setState(() {
-          _friends = [];
-          _isLoading = false;
-        });
       }
     });
 
     _fetchFriends();
   }
 
-  Future<void> _fetchFriends() async {
+  void _fetchFriends() async {
     try {
-      final friends = await _friendService.fetchFriends();
-      setState(() {
-        _friends = friends.map((friend) {
-          double distance = friend['distance'];
-          return Person(
-            friend['id'],
-            friend['name'] ?? 'Unknown',
-            friend['avatar_url'] ??
-                'https://picsum.photos/seed/${random.nextInt(1000)}/100/100',
-            distance,
-          );
-        }).toList();
-        _isLoading = false;
-      });
+      final friendProvider =
+          Provider.of<FriendProvider>(context, listen: false);
+      await friendProvider.fetchFriends();
+
+      print("Fetched friends: ${friendProvider.friends}");
     } catch (error) {
-      print('Error fetching friends: $error');
-      setState(() {
-        _isLoading = false;
-      });
+      print("Error fetching friends: $error");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final friendProvider = context.watch<FriendProvider>();
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 18, 18, 18),
-      body: _isLoading
+      body: friendProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
-                _friends.isEmpty
+                friendProvider.friends.isEmpty
                     ? const Center(
                         child: Text(
                           'Aucun ami trouvé',
@@ -99,14 +78,29 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )
                     : ListView.builder(
-                        itemCount: _friends.length,
+                        itemCount: friendProvider.friends.length,
                         itemBuilder: (context, index) {
+                          final data = friendProvider.friends[index];
+                          final friend = Person(
+                            data['id'] as String,
+                            data['name'] as String,
+                            data['avatar_url'] as String? ??
+                                'https://via.placeholder.com/100',
+                            (data['distance'] as num?)?.toDouble() ?? 0.0,
+                          );
+
+                          String imageUrl = (friend.imageUrl.isNotEmpty)
+                              ? friend.imageUrl
+                              : 'https://picsum.photos/seed/${random.nextInt(1000)}/100/100';
+
                           return Padding(
                             padding: EdgeInsets.only(
                               top: 6.0,
                               left: 6.0,
                               right: 6.0,
-                              bottom: index == _friends.length - 1 ? 80.0 : 6.0,
+                              bottom: index == friendProvider.friends.length - 1
+                                  ? 80.0
+                                  : 6.0,
                             ),
                             child: ListTile(
                               shape: RoundedRectangleBorder(
@@ -115,28 +109,27 @@ class _HomePageState extends State<HomePage> {
                               leading: ClipRRect(
                                 borderRadius: BorderRadius.circular(25),
                                 child: Image.network(
-                                  _friends[index].imageUrl,
+                                  imageUrl,
                                   width: 50,
                                   height: 50,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               title: Text(
-                                _friends[index].name,
+                                friend.name,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               trailing: Text(
-                                '${_friends[index].distance.toInt()} km',
+                                '${friend.distance.toInt()} km',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              onTap: () =>
-                                  _showUserModal(context, _friends[index]),
+                              onTap: () => _showUserModal(context, friend),
                             ),
                           );
                         },
@@ -231,12 +224,8 @@ class _HomePageState extends State<HomePage> {
                     if (user == null) return;
 
                     try {
-                      await _friendService.deleteFriend(person.id);
-
-                      setState(() {
-                        _friends
-                            .removeWhere((friend) => friend.id == person.id);
-                      });
+                      await Provider.of<FriendProvider>(context, listen: false)
+                          .deleteFriend(person.id);
 
                       Navigator.pop(context);
 
